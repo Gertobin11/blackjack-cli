@@ -1,4 +1,5 @@
 from curses.ascii import isalnum
+import numbers
 import random
 from pyfiglet import Figlet
 from termcolor import cprint
@@ -21,6 +22,8 @@ deck = []
 
 count = 0
 
+max_bet = 10
+
 # loop though the coats and names and apply them to the deck
 for coat in coats:
     for name in names:
@@ -33,9 +36,9 @@ for i in range(4):
         deck[count]['value'] = values[n]
         count += 1
 
-new_pick = random.choice(deck)
-
-print(f'You have picked the {new_pick["name"]} of {new_pick["coat"]}')
+def draw_card():
+    card = random.choice(deck)
+    return card
 
 
 def get_username(user):
@@ -55,14 +58,48 @@ def validate_username(username):
         return True
     else:
         print_red('Please enter only letters')
-            
+
+def place_bet(user):
+    while True:
+        bet = input('Please enter an amount to bet, max bet is 10: ')
+        if bet.isnumeric() != True:
+            print_red('Please enter a number')
+        elif  0 > int(bet) > 10:
+            print_red('Please enter a number between 1 and 10')
+        else:
+            user['money'] -= int(bet)
+            return bet
+
+
+def game_start(user, dealer):
+    print_green('Game Starting...')
+    bet = place_bet(user)
+    print('\n')
+    print('Dealer gets a card..')
+    dealer_card_one = draw_card()
+    dealer['hand'].append(dealer_card_one)
+    print(f'It is the {dealer_card_one["name"]} of {dealer_card_one["coat"]}')
+    print('\n')
+    player_card_one = draw_card()
+    user['hand'].append(player_card_one)
+    print('Player draws a card')
+    print(f'It is the {player_card_one["name"]} of {player_card_one["coat"]}')
+    print('Dealer gets another card..')
+    dealer_card_two = draw_card()
+    dealer['hand'].append(dealer_card_two)
+    print(f'It remains face down.......')
+
 
 
 
 def main():
     user = {
         'name': '',
-        'money': 100
+        'money': 100,
+        'hand': []
+    }
+    dealer = {
+        'hand': []
     }
     print_green(f.renderText('BlackJack CLI'))
     get_username(user)
@@ -70,7 +107,7 @@ def main():
     print(f"Welcome {user['name']}")
     print(f'Your opening balance is', end=' ')
     print_green(f'{user["money"]}')
-    
-
+    print('\n')
+    game_start(user, dealer)
 
 main()
