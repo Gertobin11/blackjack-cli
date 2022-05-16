@@ -1,5 +1,3 @@
-from curses.ascii import isalnum
-import numbers
 import random
 from pyfiglet import Figlet
 from termcolor import cprint
@@ -9,14 +7,18 @@ def print_green(x): return cprint(x, 'green')
 def print_red(x): return cprint(x, 'red')
 
 f = Figlet(font='nancyj')
+card_font = Figlet(font='epic')
+number = 1
 
-values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11]
 
-names = ['one', 'two', 'threes', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-         'jack', 'queen', 'king', 'ace']
+values = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+
+names = ['ace', 'two', 'threes', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+         'jack', 'queen', 'king']
 
 coats = ['hearts', 'spades', 'diamonds', 'clubs']
 
+symbols = ['\u2665', '\u2660', '\u2666', '\u2663' ]
 
 deck = []
 
@@ -30,11 +32,15 @@ for coat in coats:
         deck.append({'name': name,
                      'coat': coat})
 
-# loop through the deck applying values to the cards
+
+# loop through the deck applying values  and symbols to the cards
 for i in range(4):
     for n in range(len(values)):
         deck[count]['value'] = values[n]
+        deck[count]['symbol'] = symbols[i]
         count += 1
+
+print(deck)
 
 def draw_card():
     card = random.choice(deck)
@@ -88,6 +94,19 @@ def game_start(user, dealer):
     dealer_card_two = draw_card()
     dealer['hand'].append(dealer_card_two)
     print(f'It remains face down.......')
+    player_card_two = draw_card()
+    user['hand'].append(player_card_two)
+    print('Player draws a nother card')
+    print(f'It is the {player_card_two["name"]} of {player_card_two["coat"]}')
+    print('\n')
+    for card in user['hand']:
+        if card['name'].startswith('a'):
+            print(f"{card['name'][0]} -  {card['symbol']}", end=' | ')
+        else:
+            print(f"{card['value']} - {card['symbol']}", end=" | ")
+    print('\n')
+    hand_value = int(player_card_one['value']) + int(player_card_two['value'])
+    print(f" Younr hand value is {hand_value}")
 
 
 
