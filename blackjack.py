@@ -1,6 +1,7 @@
 import random
 from pyfiglet import Figlet
 from termcolor import cprint
+from time import sleep
 
 
 def print_green(x): return cprint(x, 'green')
@@ -40,11 +41,14 @@ for i in range(4):
         deck[count]['symbol'] = symbols[i]
         count += 1
 
-print(deck)
-
-def draw_card():
+def draw_card(user, *hide):
     card = random.choice(deck)
-    return card
+    user['hand'].append(card)
+    if hide:
+        return user
+    else:
+        print_cards(user['hand'])
+        return user
 
 
 def get_username(user):
@@ -79,37 +83,170 @@ def place_bet(user):
 
 def game_start(user, dealer):
     print_green('Game Starting...')
+    sleep(0.5)
     bet = place_bet(user)
     print('\n')
     print('Dealer gets a card..')
-    dealer_card_one = draw_card()
-    dealer['hand'].append(dealer_card_one)
-    print(f'It is the {dealer_card_one["name"]} of {dealer_card_one["coat"]}')
+    draw_card(dealer)
     print('\n')
-    player_card_one = draw_card()
-    user['hand'].append(player_card_one)
+    sleep(1.5)
     print('Player draws a card')
-    print(f'It is the {player_card_one["name"]} of {player_card_one["coat"]}')
+    draw_card(user)
+    sleep(1.5)
     print('Dealer gets another card..')
-    dealer_card_two = draw_card()
-    dealer['hand'].append(dealer_card_two)
+    draw_card(dealer, 'hide')
     print(f'It remains face down.......')
-    player_card_two = draw_card()
-    user['hand'].append(player_card_two)
+    sleep(1.5)
     print('Player draws a nother card')
-    print(f'It is the {player_card_two["name"]} of {player_card_two["coat"]}')
+    draw_card(user)
     print('\n')
-    for card in user['hand']:
-        if card['name'].startswith('a'):
-            print(f"{card['name'][0]} -  {card['symbol']}", end=' | ')
+    print_green('Your hand is...')
+    print_cards(user['hand'])
+    sleep(1.5)
+    player_hand_value = calculate_hand_value(user["hand"])
+    print_green('The value of your hand is.....')
+    print(player_hand_value)
+    print('\n')
+    if int(player_hand_value) == 21:
+        print_green(f.renderText('BlackJack'))
+        print('\n')
+        print_green(f'Congratulations {user["name"]} you won!')
+        user['money'] += (int(bet) * 2)
+        print('\n')
+        print_green(f"Your balance is {user['money']}")
+        play_again(user, dealer)
+    print('\n')
+    sleep(1.5)
+    print('The Dealers visible card is')
+    print_cards(dealer['hand'][:1])
+    dealer_hand_value = calculate_hand_value(dealer['hand'][:1])
+    print_green('The value of the dealers hand is....')
+    print(dealer_hand_value)
+    print('\n')
+    stick_twist(user, dealer, bet)
+
+def print_cards(hand):
+    # Made it dynamic so will print the same no atter the amount of cards
+    for _ in hand:
+        print('_____ ', end=' ')
+    print('')
+    for card in hand:
+        # Getting the face cards and printing their symbols
+        if card['name'].startswith('a') or card['name'].startswith('k'):
+            print(f"|{card['name'][0]}-{card['symbol']}", end=' | ')
+        elif card['name'].startswith('j') or card['name'].startswith('q'):
+            print(f"|{card['name'][0]}-{card['symbol']}", end=' | ')
+        # Removing a space at the end of 10 cards to maintain the strusture of the printed card
+        elif card['value'] == 10:
+            print(f"|{card['value']}-{card['symbol']}", end="| ")
         else:
-            print(f"{card['value']} - {card['symbol']}", end=" | ")
+            print(f"|{card['value']}-{card['symbol']}", end=" | ")
+    print('')
+    for _ in hand:
+        print('|    |', end=' ')
+    print('')
+    for _ in hand:
+        print('------', end=' ')
     print('\n')
-    hand_value = int(player_card_one['value']) + int(player_card_two['value'])
-    print(f" Younr hand value is {hand_value}")
+
+def calculate_hand_value(hand):
+    total = 0
+    for card in hand:
+        total += int(card['value'])
+    return total
+
+def dealer_2nd_card_reveal(dealer, dealers_score):
+    if len(dealer['hand']) == 2:
+        print('The Dealer turns his second card...')
+        print_cards(dealer['hand'])
+        print_green('The dealers hand is ....')
+        print(dealers_score)
+        print('\n')
+    
+
+def stick_twist(user, dealer, bet):
+    user['stick'] = 'no'
+    dealer['stick'] = 'no'
+    while True:
+        if user['stick'] == 'no':
+            choice = input('Do you want another card? y/n :' )
+        dealers_score = calculate_hand_value(dealer['hand'])
+        sleep(1.5)
+        if choice.lower() == 'y' and user['stick'] != 'yes':
+            dealer_2nd_card_reveal(dealer, dealers_score)
+            draw_card(user)
+        elif choice.lower() == 'n':
+            user['stick'] = 'yes'
+            dealer_2nd_card_reveal(dealer, dealers_score)
+        else:
+            print_red('Please enter y or n ')
+        sleep(1)
+        if calculate_game_over(user['hand']):
+            print('\n')
+            print(f'Unlucky {user["name"]} you went Bust your score was over 21')
+            print_red(f"Your balance is {user['money']}")
+            play_again(user, dealer)
+        if int(dealers_score) < 14:
+            print('The Dealer turns his next card...')
+            draw_card(dealer)
+            if int(calculate_hand_value(dealer['hand'])) > 21:
+                print_green(f'Congratulations {user["name"]} won, The Dealer went Bust')
+                user['money'] += (int(bet) * 2)
+                print('\n')
+                print_green(f"Your balance is {user['money']}")
+                play_again(user, dealer)
+        else:
+            dealer['stick'] = 'yes'
+        sleep(1.5)
+
+        if user['stick'] == 'yes' and dealer['stick'] == 'yes':
+            if int(calculate_hand_value(user['hand'])) > int(calculate_hand_value(dealer['hand'])):
+                print_green(f'Congratulations {user["name"]} won')
+                print_cards(user['hand'])
+                print_green('BEATS')
+                print_cards(dealer['hand'])
+                user['money'] += (int(bet) * 2)
+                print('\n')
+                print_green(f"Your balance is {user['money']}")
+                play_again(user, dealer)
+            else:
+                print_red(f"Unlucky {user['name']} but the dealer won this time")
+                print_cards(dealer['hand'])
+                print_red('BEATS')
+                print_cards(user['hand'])
+                print('\n')
+                print_red(f"Your balance is {user['money']}")
+                play_again(user, dealer)
+        print('end')
 
 
+def calculate_game_over(hand):
+    total = calculate_hand_value(hand)
+    if int(total) > 21:
+        return True
+    else:
+        return False
 
+def play_again(user, dealer):
+    user['hand'] = []
+    dealer['hand'] = []
+    while True:
+        replay = input('Do you want to play again? y/n: ')
+        if replay.lower() == 'y':
+            game_start(user, dealer)
+        elif replay.lower() == 'n':
+            if user['money'] == 100:
+                print('You broke evem!')
+            elif user['money'] > 100:
+                profit = user['money'] - 100
+                print_green(F"Congratulations you made a profit of {profit}")
+            else:
+                loss = 100 - user['money']
+                print_red(f"Unlucky you made a loss of {loss}")
+            quit()
+        else:
+            print('Please enter y or n ')
+    
 
 def main():
     user = {
@@ -118,7 +255,7 @@ def main():
         'hand': []
     }
     dealer = {
-        'hand': []
+        'hand': [],
     }
     print_green(f.renderText('BlackJack CLI'))
     get_username(user)
