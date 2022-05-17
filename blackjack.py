@@ -128,14 +128,14 @@ def game_start(user, dealer):
 def print_cards(hand):
     # Made it dynamic so will print the same no atter the amount of cards
     for _ in hand:
-        print('_____ ', end=' ')
+        print(' _____', end=' ')
     print('')
     for card in hand:
         # Getting the face cards and printing their symbols
         if card['name'].startswith('a') or card['name'].startswith('k'):
-            print(f"|{card['name'][0]}-{card['symbol']}", end=' | ')
+            print(f"|{card['name'][0].upper()}-{card['symbol']}", end=' | ')
         elif card['name'].startswith('j') or card['name'].startswith('q'):
-            print(f"|{card['name'][0]}-{card['symbol']}", end=' | ')
+            print(f"|{card['name'][0].upper()}-{card['symbol']}", end=' | ')
         # Removing a space at the end of 10 cards to maintain the strusture of the printed card
         elif card['value'] == 10:
             print(f"|{card['value']}-{card['symbol']}", end="| ")
@@ -144,6 +144,21 @@ def print_cards(hand):
     print('')
     for _ in hand:
         print('|    |', end=' ')
+    print('')
+    for _ in hand:
+        print('|    |', end=' ')
+    print('')
+    for card in hand:
+        # Getting the face cards and printing their symbols
+        if card['name'].startswith('a') or card['name'].startswith('k'):
+            print(f"|{card['name'][0].upper()}-{card['symbol']}", end=' | ')
+        elif card['name'].startswith('j') or card['name'].startswith('q'):
+            print(f"|{card['name'][0].upper()}-{card['symbol']}", end=' | ')
+        # Removing a space at the end of 10 cards to maintain the strusture of the printed card
+        elif card['value'] == 10:
+            print(f"|{card['value']}-{card['symbol']}", end="| ")
+        else:
+            print(f"|{card['value']}-{card['symbol']}", end=" | ")
     print('')
     for _ in hand:
         print('------', end=' ')
