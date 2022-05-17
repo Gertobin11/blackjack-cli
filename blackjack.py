@@ -201,10 +201,10 @@ def stick_twist(user, dealer, bet):
             print(f'Unlucky {user["name"]} you went Bust your score was over 21')
             print_red(f"Your balance is {user['money']}")
             play_again(user, dealer)
-        if int(dealers_score) < 14:
+        if int(dealers_score) <= 16:
             print('The Dealer turns his next card...')
             draw_card(dealer)
-            if int(calculate_hand_value(dealer['hand'])) > 21:
+            if calculate_game_over(dealer['hand']):
                 print_green(f'Congratulations {user["name"]} won, The Dealer went Bust')
                 user['money'] += (int(bet) * 2)
                 print('\n')
@@ -238,7 +238,12 @@ def stick_twist(user, dealer, bet):
 def calculate_game_over(hand):
     total = calculate_hand_value(hand)
     if int(total) > 21:
-        return True
+        for card in hand:
+            if card['name'].startswith('a'):
+                card['value'] = 1
+        total = calculate_hand_value(hand)
+        if int(total) > 21:
+            return True
     else:
         return False
 
